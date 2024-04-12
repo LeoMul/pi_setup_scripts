@@ -4,16 +4,61 @@ import os
 #notes
 #i am assuming that only one symmetry per elev file for now.
 
+default_email = '40268323@ads.qub.ac.uk'
+default_partition = 'k2-math-physics'
+default_time_limit = '1:00:00'
+default_directory_list_location = ''
+default_mem_per_cpu = 6
+default_nodes = 1
+default_num_cpu_per_node = 128
+
+default_E0 = 0.01
+default_NE = 128
+default_DE = 0.1
+default_guage = 'len'
+
+class Input:
+    def __init__(self,
+                 email=default_email,
+                 partition=default_partition,
+                 time_limit = default_time_limit,
+                 mem_per_cpu_GB = default_mem_per_cpu,
+                 nodes=default_nodes,
+                 cpu_per_node = default_num_cpu_per_node,
+                 e0_ryd=default_E0,
+                 num_e_points=default_NE,
+                 delta_e_ryd = default_DE,
+                 gauge = default_guage,
+                 location_of_directory_list = default_directory_list_location):
+ 
+        self.email = email 
+        self.partition = partition
+        self.time_limit = time_limit
+        self.cpu_per_node = cpu_per_node
+        self.mem_per_cpu_GB = mem_per_cpu_GB
+        self.nodes= nodes
+        self.e0_ryd = e0_ryd
+        self.num_e_points = num_e_points
+        self.delta_e_ryd = delta_e_ryd
+        self.gauge = gauge
+        self.location_of_directory_list = location_of_directory_list
+
+
 
 def read_elev(elev_path):
     #reads Elev and gets the number of bound states.
 
     elev = open(elev_path,'r')
     elev_read = elev.readlines() 
+    
+    header = elev_read[0].replace('\n','')
+    N = int(header[-1])
+    Z = int(header[-2])
+
     initial_symmetry = (elev_read[4]).split()[0:3]    
     num_bound_states = int(elev_read[5].split()[0])
     elev.close()
-    return initial_symmetry,num_bound_states
+    return initial_symmetry,num_bound_states,Z,N
 
 def determine_final_bound_states(initial_bound_state_string_split):
     #initial_bound_state = initial_bound_state_string.split()
@@ -98,48 +143,55 @@ def write_pstgbf0_job_script(partition,nodes,cpu_per_node,time_limit,mem_gb,emai
 
 def run_many_pstgf(directories,eff_charge,num_points,e0,de,partition,nodes,cpu_per_node,time_limit,mem_gb,email,guage):
 
-    e0 = e0 / eff_charge**2 
-    de = de /eff_charge ** 2
+    e0_new = e0 
+    de_new = de
+
     print(directories)
     for directory in directories:
         print('changing directory to,',directory)
         os.chdir(directory)
         os.system('cp ../pstgbf0.x .')
         #os.system('cd {}'.format(directory))
-        initial_symmetry,num_bound_states = read_elev('ELEV')
+        
+        initial_symmetry,num_bound_states,Z,N = read_elev('ELEV')
+        eff = Z - N 
+
+        if eff != 0:
+            e0_new = e0 / eff**2 
+            de_new = de /eff ** 2 
+        
+
         new_symmetries = determine_final_bound_states(initial_symmetry)
-        write_dstgbf0damp(new_symmetries,num_bound_states,num_points,e0,de,guage)
+        write_dstgbf0damp(new_symmetries,num_bound_states,num_points,e0_new,de_new,guage)
         title = str(''.join(initial_symmetry))+'bf'
         print(title)
         write_pstgbf0_job_script(partition,nodes,cpu_per_node,time_limit,mem_gb,email,title)
         os.system('sbatch pstgbf.job')
         os.chdir('..')
 
-def main():
+def main(input:Input):
 
-    Z = 52 
-    N = 50 #in target...
-    num_points = 1
-    e0 = 1.0 
-    d0 = 1.0
+    num_points = input.num_e_points
+    e0 = input.e0_ryd
+    d0 = input.delta_e_ryd
 
-    guage = 'len' #options: 'len','vel'
+    guage = input.gauge #options: 'len','vel'
 
-    partition = 'k2-math-physics-debug'
-    time_limit = '0:10:00'
-    email = '40268323@ads.qub.ac.uk'
-    nodes = 1
-    num_cpu_per_node = 128
-    mem_per_cpu = 6
-    eff = Z - N 
+    partition = input.partition
+    time_limit = input.time_limit
+    email = input.email
+    nodes = input.nodes
+    num_cpu_per_node = input.cpu_per_node
+    mem_per_cpu = input.mem_per_cpu_GB
 
     if guage =='len':
         guage_key =0
     elif guage == 'vel':
         guage_key =1
-    
 
-    f = open('directories_for_pstgbf','r')
+    eff = 1
+
+    f = open(input.location_of_directory_list,'r')
     f_read = f.readlines()
     f.close()
     directories_raw = []
@@ -156,4 +208,23 @@ def main():
     
     return 0 
 
-main()
+
+import json 
+import argparse
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-j', '--json',  help='path of json')
+args = parser.parse_args()
+
+if not args.json:
+    input_default = Input()
+    default = json.dumps(input_default.__dict__,indent=1)
+    print(default) 
+
+else: 
+    with open(args.json, 'r') as j:
+        contents = json.loads(j.read())
+
+    input = Input(**contents)
+    main(input)
