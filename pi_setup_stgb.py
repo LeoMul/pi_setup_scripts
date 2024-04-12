@@ -109,7 +109,7 @@ def main():
     title = 'stgb'
     mem_gb = 6
 
-    directory_of_data_files = ''
+    directory_of_data_files = '..'
 
     symmetries = read_in_symmetries('symmetries')
     desired_directories = decode_symmetries(symmetries)
