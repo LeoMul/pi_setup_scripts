@@ -1,6 +1,44 @@
 import os 
 import numpy as np 
 
+default_email = '40268323@ads.qub.ac.uk'
+default_partition = 'k2-math-physics'
+default_time_limit = '1:00:00'
+default_mem_per_cpu = 6
+
+default_symmetry_path = ''
+default_directory_of_data = '..'
+
+default_n0 = 0.21
+default_n = 10.2
+default_dn = 0.2
+
+default_rewrite_override = True
+
+class Input:
+    def __init__(self,
+                 override=default_rewrite_override,
+                 symmetry_path=default_symmetry_path,
+                 data_directory=default_directory_of_data,
+                 email=default_email,
+                 partition=default_partition,
+                 time_limit = default_time_limit,
+                 mem_per_cpu = default_mem_per_cpu,
+                 n0=default_n0,
+                 nf=default_n,
+                 dn=default_dn):
+        self.override = override
+        self.symmetry_path = symmetry_path 
+        self.data_directory = data_directory
+        self.email = email 
+        self.partition = partition
+        self.time_limit = time_limit
+        self.mem_per_cpu = mem_per_cpu
+        self.n0 = default_n0
+        self.nf = nf 
+        self.dn = dn
+
+
 def read_in_symmetries(path_to_symmetries):
     #reads in the symmetries file
     symmetries = np.loadtxt(path_to_symmetries,dtype=str)
@@ -82,6 +120,8 @@ def setup_many_dstgb_directories(directories,symmetries,n0,nf,delta_n,partition,
 
     assert(len(directories) == len(symmetries))
 
+    print('linking data from directory:',data_directory)
+
     for ii in range(0,len(directories)):
         os.chdir(directories[ii])
         write_dstgb(symmetries[ii],n0,nf,delta_n)
@@ -97,26 +137,26 @@ def setup_many_dstgb_directories(directories,symmetries,n0,nf,delta_n,partition,
         os.chdir('..')
 
 
-def main():
+def main(input:Input):
 
-    n_0 = 0.21
-    n_f = 10.02
-    delta_n = 0.02
+    n_0 = input.n0
+    n_f = input.nf
+    delta_n = input.dn
 
-    email = '40268323@ads.qub.ac.uk'
-    partition = 'k2-math-physics-debug'
-    time_limit = '0:1:00'
+    email = input.email
+    partition = input.partition
+    time_limit = input.time_limit
     title = 'stgb'
-    mem_gb = 6
+    mem_gb = input.mem_per_cpu
 
-    directory_of_data_files = '..'
+    directory_of_data_files = input.data_directory
 
-    symmetries = read_in_symmetries('symmetries')
+    symmetries = read_in_symmetries(input.symmetry_path)
     desired_directories = decode_symmetries(symmetries)
 
     print('the desired directories are:',desired_directories)
 
-    over_ride = True
+    over_ride = input.override
     directories_to_be_worked_with,symmetries_kept = make_symmetry_directories(desired_directories,symmetries)
 
     #if the user chooses to override, the directories will be entered anyway and the various stgb's written.
@@ -129,4 +169,23 @@ def main():
 
     setup_many_dstgb_directories(directories_to_be_worked_with,symmetries_kept,n_0,n_f,delta_n,partition,time_limit,mem_gb,email,title,directory_of_data_files)
 
-main()
+import json 
+import argparse
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-j', '--json',  help='path of json')
+args = parser.parse_args()
+
+if not args.json:
+    input_default = Input()
+    default = json.dumps(input_default.__dict__,indent=1)
+    print(default) 
+
+else: 
+    with open(args.json, 'r') as j:
+        contents = json.loads(j.read())
+
+    input = Input(**contents)
+    main(input)
+
