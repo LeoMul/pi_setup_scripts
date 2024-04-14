@@ -52,8 +52,8 @@ def read_elev(elev_path):
     elev_read = elev.readlines() 
     
     header = elev_read[0].replace('\n','')
-    N = int(header[-1])
-    Z = int(header[-2])
+    N = int(header.split()[-1])
+    Z = int(header.split()[-2])
 
     initial_symmetry = (elev_read[4]).split()[0:3]    
     num_bound_states = int(elev_read[5].split()[0])
@@ -155,7 +155,7 @@ def run_many_pstgf(directories,eff_charge,num_points,e0,de,partition,nodes,cpu_p
         
         initial_symmetry,num_bound_states,Z,N = read_elev('ELEV')
         eff = Z - N 
-
+        print('found',Z,N)
         if eff != 0:
             e0_new = e0 / eff**2 
             de_new = de /eff ** 2 
