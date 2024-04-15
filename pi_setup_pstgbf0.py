@@ -210,6 +210,8 @@ def run_many_pstgf(input:Input):
 
         if not os.path.exists(directory):
             os.mkdir(directory)
+        else:
+            print('this directory',directory,'alreadyt exists in your outer region - but i havent implemented a safety feature here. proceed with caution.')
 
 
         print('changing directory to,',directory)
