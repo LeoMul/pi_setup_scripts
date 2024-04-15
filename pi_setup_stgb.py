@@ -21,8 +21,7 @@ import argparse
 #- you from the past
 
 
-#this is hard coded right now. i might change that.
-stgb_exec_path = '../stgb_blas.proto.x'
+
 
 #what does the input deck do, Leo? 
 
@@ -42,6 +41,10 @@ stgb_exec_path = '../stgb_blas.proto.x'
 #default stuff, so that the user easily knows how to change the input. in theory.
 
 #the user might consider changing the defaults to suit their needs.
+
+#this is hard coded right now. i might change that.
+default_stgb_exec_abs_path = 'stgb_blas.proto.x'
+
 default_email = '40268323@ads.qub.ac.uk'
 default_partition = 'k2-math-physics-debug'
 default_time_limit = '1:00:00'
@@ -72,7 +75,8 @@ class Input:
                  run_jobs = default_run_jobs,
                  n0=default_n0,
                  nf=default_n,
-                 dn=default_dn):
+                 dn=default_dn,
+                 absolute_stgbx_path=default_stgb_exec_abs_path):
         self.overwrite_existing_arrays = overwrite_existing_arrays
         self.symmetries = symmetries 
         self.hamiltonian_path = hamiltonian_path
@@ -81,6 +85,7 @@ class Input:
         self.time_limit = time_limit
         self.mem_per_cpu_GB = mem_per_cpu_GB
         self.run_jobs = run_jobs
+        self.absolute_stgbx_path = absolute_stgbx_path
         self.n0 = n0
         self.nf = nf 
         self.dn = dn
@@ -177,7 +182,7 @@ def write_stgb_job_script(partition,time_limit,mem_gb,email,title):
     stgb_job.close()
 
 
-def setup_many_dstgb_directories(directories,symmetries,n0,nf,delta_n,partition,time_limit,mem_gb,email,title_end,hamiltonian_path,run_jobs):
+def setup_many_dstgb_directories(directories,symmetries,n0,nf,delta_n,partition,time_limit,mem_gb,email,title_end,hamiltonian_path,run_jobs,stgb_exec_path):
 
     assert(len(directories) == len(symmetries))
 
@@ -232,7 +237,8 @@ def main(input:Input):
     print('working in directories: ',directories_to_be_worked_with)
     print('working with symmetries: ',symmetries_kept)
     run_jobs = input.run_jobs
-    setup_many_dstgb_directories(directories_to_be_worked_with,symmetries_kept,n_0,n_f,delta_n,partition,time_limit,mem_gb,email,title,directory_of_data_files,run_jobs)
+    stgb_exec_path = input.absolute_stgbx_path
+    setup_many_dstgb_directories(directories_to_be_worked_with,symmetries_kept,n_0,n_f,delta_n,partition,time_limit,mem_gb,email,title,directory_of_data_files,run_jobs,stgb_exec_path)
 
 
 
