@@ -216,12 +216,12 @@ def run_many_pstgf(input:Input):
         os.chdir(directory)
         os.system('cp {} pstgbf0.x'.format(input.pstgbfx_absolute_path))
         #os.system('cd {}'.format(directory))
+        bound_symmetry_path = bound_path+'/'+directory
 
         elev_path = bound_symmetry_path+'/ELEV'
 
         if os.path.exists(elev_path):
             
-            bound_symmetry_path = bound_path+'/'+directory
 
             initial_symmetry,num_bound_states,Z,N = read_elev(elev_path)
 
