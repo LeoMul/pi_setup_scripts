@@ -209,7 +209,7 @@ def run_many_pstgf(input:Input):
     for directory in directories:
         print('changing directory to,',directory)
         os.chdir(directory)
-        os.system('cp {} .'.format(input.pstgbfx_absolute_path))
+        os.system('cp {} pstgbf0.x'.format(input.pstgbfx_absolute_path))
         #os.system('cd {}'.format(directory))
         
         if os.path.exists('ELEV'):

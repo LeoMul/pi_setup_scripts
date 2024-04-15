@@ -196,7 +196,7 @@ def setup_many_dstgb_directories(directories,symmetries,n0,nf,delta_n,partition,
         #write out a stgb job script
         write_stgb_job_script(partition,time_limit,mem_gb,email,title)
 
-        os.system('cp {}  .'.format(stgb_exec_path))
+        os.system('cp {}  stgb_blas.proto.x'.format(stgb_exec_path))
         os.system('ln -s {} H.DAT'.format(hamiltonian_path))
         print('linking hamiltonian from directory:',hamiltonian_path)
 
