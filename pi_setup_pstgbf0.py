@@ -15,7 +15,42 @@ import argparse
 #I should ask Connor if this is sound - or if the possible allowed final states should be limited to those in 
 #the DSTG2.INP or the sizeBP files.
 
+#input deck explanation:
 
+#email - str -email for slurm - leaving it blank should in theory stop it. (i havent tested that)
+#partition - str -  slurm partition
+#time_limit - str -slurm job time limit
+#cpu_per_node - int - number of cpu cores
+#mem_per_cpu_GB - int -memory per cpu in GB
+#nodes - int - number of nodes
+
+#e0_ryd - float - min energy Ryds (NOT scaled ryds - the code scales them for you)
+#num_e_points - int - number of energy pts
+#delta_e_ryd - float - min energy Ryds (NOT scaled ryds - the code scales them for you)
+
+#gauge - str - two options, "len" and "vel".
+
+#pstgbfx_absolute_path -str- - real (or relative) path of the pstgbf0.x
+#hamiltonian_absolute_path -str- - real (absokute) path of the Hamiltonian.dat
+#D_files_absolute_path -str- - real (or relative) path of the D*.
+#bound_state_directory_abs_path - str - realpath of parent directory of the bound state calculatiuon.
+#directory_list - str - paths of requested bound states in bound_state_directory_abs_path.
+
+#i.e for  
+#"directory_list": [
+#  "symdir_2j1_p0",
+#  "symdir_2j0_p1"
+# ]
+
+#the code links the B* from bound_state_directory_abs_path/symdir_2j1_p0 
+#and bound_state_directory_abs_path/symdir_2j1_p1.
+
+#it additionally creates the directories symdir_2j1_p0 etc in the current working directory
+#where it will then run the pstgbf0 jobs.
+
+
+#run_jobs - boolean - whether or not the code sbatch's the jobs made. 
+#for testing really, afterwards one might type sbatch symdir*/stgb.job  or the specific ones they want.
 
 default_pstgbf0_exec_path = 'pstgbf0.x'
 
@@ -179,6 +214,13 @@ def write_pstgbf0_job_script(partition,nodes,cpu_per_node,time_limit,mem_gb,emai
     pstgbf0_job.close()
 
 def run_many_pstgf(input:Input):
+
+    #for each directory specified, it creates an outer region directory
+    #it goes to bound_states/directory and sym links the B0* files
+    #sym links the D* files from the specified directory
+    #sym links the H.DAT from specified directory.
+
+
     directories = input.directory_list
     num_points = input.num_e_points
     e0=input.e0_ryd
