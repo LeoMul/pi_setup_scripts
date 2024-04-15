@@ -207,12 +207,16 @@ def run_many_pstgf(input:Input):
     print(directories)
 
     for directory in directories:
-        os.mkdir(directory)
+
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+
+
         print('changing directory to,',directory)
         os.chdir(directory)
         os.system('cp {} pstgbf0.x'.format(input.pstgbfx_absolute_path))
         #os.system('cd {}'.format(directory))
-        
+
         elev_path = bound_symmetry_path+'/ELEV'
 
         if os.path.exists(elev_path):
