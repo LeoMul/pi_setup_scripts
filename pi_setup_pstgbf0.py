@@ -174,7 +174,7 @@ def write_dstgbf0damp(final_bound_states,num_bound_states,num_points,e0,de,guage
 
     input_deck = open('dstgbf0damp','w')
     input_deck.write('&STGF\n')
-    input_deck.write('       NODAMP=1 IPERT=1 IPRINT=-2 IQDT=0 IMESH=1 IOPT1=2\n') 
+    input_deck.write('       NODAMP=1 IPERT=0 IPRINT=-2 IQDT=0 IMESH=1 IOPT1=2\n') 
     input_deck.write('       IAUGER=0 NTYP1=0 NTYP2I=0 NMIN=4 IGAUGE={} \n'.format(guage))
     input_deck.write('       IPHOTO=400 NPIEB={} /\n'.format(num_bound_states))
     input_deck.write('&MESH1 MXE={} E0={} EINCR={} &END\n'.format(int(num_points),e0,de))
