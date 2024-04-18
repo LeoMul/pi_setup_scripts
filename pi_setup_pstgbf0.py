@@ -76,7 +76,7 @@ default_num_cpu_per_node = 128
 default_E0 = 0.01
 default_NE = 128
 default_DE = 0.1
-
+default_max_princ_qd = 100.0
 #this assumes you correctly set the guage in stgd. 
 #I'm looking at you, past Leo, you rapscallion.
 default_guage = 'len'
@@ -93,6 +93,7 @@ class Input:
                  e0_ryd=default_E0,
                  num_e_points=default_NE,
                  delta_e_ryd = default_DE,
+                 max_princ_qd = default_max_princ_qd,
                  gauge = default_guage,
                  directory_list = default_directory_list,
                  hamiltonian_absolute_path = default_hamiltonian_path,
@@ -110,6 +111,7 @@ class Input:
         self.e0_ryd = e0_ryd
         self.num_e_points = num_e_points
         self.delta_e_ryd = delta_e_ryd
+        self.max_princ_qd = max_princ_qd
         self.gauge = gauge
         self.pstgbfx_absolute_path = pstgbfx_absolute_path
         self.hamiltonian_absolute_path = hamiltonian_absolute_path
@@ -119,7 +121,7 @@ class Input:
 
 
 
-def read_elev(elev_path):
+def read_elev(elev_path,max_n = 10):
     #reads Elev and gets the number of bound states.
 
     elev = open(elev_path,'r')
@@ -131,6 +133,14 @@ def read_elev(elev_path):
 
     initial_symmetry = (elev_read[4]).split()[0:3]    
     num_bound_states = int(elev_read[5].split()[0])
+
+    position = 6
+    for jj in range(0,num_bound_states):
+        n_princ_quantum = elev_read[jj + position].split()[-1]
+        if float(n_princ_quantum) > max_n:
+            num_bound_states = jj + 1
+            break 
+
     elev.close()
     return initial_symmetry,num_bound_states,Z,N
 
@@ -267,7 +277,7 @@ def run_many_pstgf(input:Input):
         if os.path.exists(elev_path):
             
 
-            initial_symmetry,num_bound_states,Z,N = read_elev(elev_path)
+            initial_symmetry,num_bound_states,Z,N = read_elev(elev_path,input.max_princ_qd)
 
             if num_bound_states != 0:
 
