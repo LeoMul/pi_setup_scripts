@@ -110,6 +110,17 @@ def decode_symmetries(symmetries):
     
     for row in symmetries:
         string = 'symdir_2j'+str(row[0]) + '_p' + str(row[1])
+
+        string = str(row[0])
+        if int(row[1]) == 0:
+            string += 'e'
+        elif int(row[1]) == 1:
+            string += 'o'
+        else:
+            print('INVALID PARITY IN symmetry ',row,' stopping')
+            exit()
+
+
         desired_symmetries.append(string)
 
     return desired_symmetries
